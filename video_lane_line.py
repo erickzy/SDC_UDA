@@ -1,33 +1,12 @@
 # Here is a good reference from zhihu: <https://zhuanlan.zhihu.com/p/25354571>
 
 # import some useful packages
+from moviepy.editor import VideoFileClip
 import matplotlib.pyplot as plt
 import  matplotlib.image as mpimg
 import  numpy as np
 import cv2
 import math
-# %matplotlib inline
-
-#reading in a image
-image = mpimg.imread('CarND-LaneLines-P1-master/test_images/solidWhiteRight.jpg')
-
-#printing out some status and plotting
-#the shape of image is (540, 960, 3) hight, wide, number, number=3 is mean this is a RGB graphic
-print('This image is:' , type(image), 'with dimensions:' , image.shape)
-plt.imshow(image) # if you wanted to show a single color channel image called 'gray', for example, call as plt.imshow(gray, cmap='gray')
-
-""""
-Some OpenCV functions (beyond those introduced in the lesson) that might be useful for this project are:
-cv2.inRange() for color selection
-cv2.fillPoly() for regions selection
-cv2.line() to draw lines on an image given endpoints
-cv2.addWeighted() to coadd / overlay two images cv2.cvtColor() to grayscale or change color cv2.imwrite() to output images to file
-cv2.bitwise_and() to apply a mask to an image
-Check out the OpenCV documentation to learn about these and discover even more awesome functionality!
-"""
-
-
-
 
 def grayscale(img):
     """Applies the Grayscale transform
@@ -135,45 +114,28 @@ def weighted_img(img, initial_img, α=0.8, β=1., λ=0.):
 import os
 os.listdir("CarND-LaneLines-P1-master/test_images/")
 """
-# make the image from color to gray
-gray = grayscale(image)
 
-#make the gray image blur
-blur_gray = gaussian_blur(gray, 5)
-
-#abstrub the lane line
-edges = canny(blur_gray,50,200)
 
 #cut the region the lane needed
-roi_vtx = np.array([[(0, image.shape[0]), (460, 325), (520, 325), (image.shape[1], image.shape[0])]])
-roi_edge = region_of_interest(edges, roi_vtx)
+def process_an_image(image):
+    gray = grayscale(image)
+    blur_gray = gaussian_blur(gray, 5)
+    edges = canny(blur_gray, 50, 200)
+    roi_vtx = np.array([[(0, image.shape[0]), (460, 325), (520, 325), (image.shape[1], image.shape[0])]])
+    roi_edge = region_of_interest(edges, roi_vtx)
+    rho = 1
+    theta = np.pi / 180
+    threshold = 15
+    min_line_length = 40
+    max_line_gap = 20
+    line_image = hough_lines(roi_edge, rho, theta,threshold, min_line_length, max_line_gap)
+    res_img = weighted_img(line_image,image)
+    return res_img
 
-# hough line to draw the lane line
-rho = 1
-theta = np.pi / 180
-threshold = 15
-min_line_length = 40
-max_line_gap = 20
-line_image = hough_lines(roi_edge, rho, theta,threshold, min_line_length, max_line_gap)
-res_img = weighted_img(line_image,image)
 
-
-#show the graphic the 1st parameter is the window name, 2nd is the pic you want to read
-
-cv2.imshow("test1_img", res_img)
-#cv2.imshow("test2_img", gray)
-
-#plt to show pic solution
-"""""
-plt.imshow(blur_gray)
-plt.imshow(gray)
-plt.show()
-"""
-
-#this command needed to keep the graphic display "0"second(infinite) until you press "keyboard"
-
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-
+output = 'solidWhiteRighttest.mp4'
+clip = VideoFileClip('CarND-LaneLines-P1-master/test_videos/solidWhiteRight.mp4')
+out_clip = clip.fl_image(process_an_image)
+out_clip.write_videofile(output, audio=False)
 
 
