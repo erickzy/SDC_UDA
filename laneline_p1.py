@@ -9,7 +9,7 @@ import math
 # %matplotlib inline
 
 #reading in a image
-image = cv2.imread('CarND-LaneLines-P1-master/test_images/solidYellowCurve2.jpg')
+image = cv2.imread('CarND-LaneLines-P1-master/test_images/challenge2.jpg')
 
 #printing out some status and plotting
 #the shape of image is (540, 960, 3) hight, wide, number, number=3 is mean this is a RGB graphic
@@ -35,7 +35,10 @@ def grayscale(img):
     but NOTE: to see the returned image as grayscale
     (assuming your grayscaled image is called 'gray')
     you should call plt.imshow(gray, cmap='gray')"""
-    return cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    gra = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV_FULL)  # FOR YELLOWLINE
+    comb = cv2.cvtColor(hsv, cv2.COLOR_RGB2GRAY)
+    return cv2.addWeighted(comb, 0.5, gra, 0.5, 0.0)
     # Or use BGR2GRAY if you read an image with cv2.imread()
     # return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
@@ -111,8 +114,8 @@ def draw_lines(img, lines, color=[0, 255, 0], thickness=7):
     right_points = [(x1, y1) for line in right_lines for x1, y1, x2, y2 in line]
     right_points = right_points + [(x2, y2) for line in right_lines for x1, y1, x2, y2 in line]
 
-    left_vtx = calc_lane_vertices(left_points, 350, img.shape[0])
-    right_vtx = calc_lane_vertices(right_points, 350, img.shape[0])
+    left_vtx = calc_lane_vertices(left_points, 370, img.shape[0])
+    right_vtx = calc_lane_vertices(right_points, 370, img.shape[0])
 
     cv2.line(img, left_vtx[0], left_vtx[1], color, thickness)
     cv2.line(img, right_vtx[0], right_vtx[1], color, thickness)
@@ -183,28 +186,27 @@ os.listdir("CarND-LaneLines-P1-master/test_images/")
 gray = grayscale(image)
 
 #make the gray image blur
-blur_gray = gaussian_blur(gray, 5)
+blur_gray = gaussian_blur(gray, 9)
 
-#abstrub the lane line
-edges = canny(blur_gray,50,255)
-
+#abstrub the lane line, 150)
+edges = canny(blur_gray, 30, 100)
 #cut the region the lane needed
-roi_vtx = np.array([[(100, image.shape[0]-70), (460, 350), (520, 350), (image.shape[1]-100, image.shape[0]-70)]])
+roi_vtx = np.array([[(70, image.shape[0]-50), (460, 370), (520, 370), (image.shape[1]-100, image.shape[0]-50)]])
 roi_edge = region_of_interest(edges, roi_vtx)
 
 # hough line to draw the lane line
 rho = 1
 theta = np.pi / 180
-threshold = 10
-min_line_length = 10
-max_line_gap = 70
+threshold = 2
+min_line_length = 20
+max_line_gap = 100
 line_image = hough_lines(roi_edge, rho, theta,threshold, min_line_length, max_line_gap)
 res_img = weighted_img(line_image,image)
 
 
 #show the graphic the 1st parameter is the window name, 2nd is the pic you want to read
 
-cv2.imshow("test1_img", roi_edge)
+cv2.imshow("test1_img", res_img)
 #cv2.imshow("test2_img", gray)
 
 #plt to show pic solution

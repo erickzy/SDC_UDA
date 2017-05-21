@@ -14,7 +14,10 @@ def grayscale(img):
     but NOTE: to see the returned image as grayscale
     (assuming your grayscaled image is called 'gray')
     you should call plt.imshow(gray, cmap='gray')"""
-    return cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    gra = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV_FULL)  # FOR YELLOWLINE
+    comb = cv2.cvtColor(hsv, cv2.COLOR_RGB2GRAY)
+    return cv2.addWeighted(comb, 0.5, gra, 0.5, 0.0)
     # Or use BGR2GRAY if you read an image with cv2.imread()
     # return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
@@ -90,8 +93,8 @@ def draw_lines(img, lines, color=[0, 255, 0], thickness=7):
     right_points = [(x1, y1) for line in right_lines for x1, y1, x2, y2 in line]
     right_points = right_points + [(x2, y2) for line in right_lines for x1, y1, x2, y2 in line]
 
-    left_vtx = calc_lane_vertices(left_points, 350, img.shape[0]) #此处的350调节显示线长
-    right_vtx = calc_lane_vertices(right_points, 350, img.shape[0])
+    left_vtx = calc_lane_vertices(left_points, 450, img.shape[0]) #此处的350调节显示线长
+    right_vtx = calc_lane_vertices(right_points, 450, img.shape[0])
 
     cv2.line(img, left_vtx[0], left_vtx[1], color, thickness)
     cv2.line(img, right_vtx[0], right_vtx[1], color, thickness)
@@ -163,21 +166,20 @@ os.listdir("CarND-LaneLines-P1-master/test_images/")
 def process_an_image(image):
     gray = grayscale(image)
     blur_gray = gaussian_blur(gray, 9)
-    edges = canny(blur_gray, 30, 200)
-    roi_vtx = np.array([[(0, image.shape[0]), (460, 320), (500, 320), (image.shape[1], image.shape[0])]])#此处数值都是关于算法的区域，与显示无关
+    edges = canny(blur_gray, 30, 100)
+    roi_vtx = np.array([[(150, image.shape[0]-65), (600, 480), (680, 480), (image.shape[1]-150, image.shape[0]-65)]])#此处数值都是关于算法的区域，与显示无关
     roi_edge = region_of_interest(edges, roi_vtx)
     rho = 0.5
     theta = np.pi / 180
     threshold = 1
     min_line_length = 50
-    max_line_gap = 100
+    max_line_gap = 80
     line_image = hough_lines(roi_edge, rho, theta,threshold, min_line_length, max_line_gap)
     res_img = weighted_img(line_image,image)
     return res_img
-
 """""
 output = 'solidWhiteRighttest.mp4'
-clip = VideoFileClip('CarND-LaneLines-P1-master/test_videos/solidWhiteRight.mp4')
+clip = VideoFileClip('CarND-LaneLines-P1-master/test_videos/solidWRhiteRight.mp4')
 out_clip = clip.fl_image(process_an_image)
 out_clip.write_videofile(output, audio=False)
 """
