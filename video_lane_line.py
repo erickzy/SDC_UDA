@@ -90,8 +90,8 @@ def draw_lines(img, lines, color=[0, 255, 0], thickness=7):
     right_points = [(x1, y1) for line in right_lines for x1, y1, x2, y2 in line]
     right_points = right_points + [(x2, y2) for line in right_lines for x1, y1, x2, y2 in line]
 
-    left_vtx = calc_lane_vertices(left_points, 350, img.shape[0]) #此处的350调节显示线长
-    right_vtx = calc_lane_vertices(right_points, 350, img.shape[0])
+    left_vtx = calc_lane_vertices(left_points, 320, img.shape[0]) #此处的350调节显示线长
+    right_vtx = calc_lane_vertices(right_points, 320, img.shape[0])
 
     cv2.line(img, left_vtx[0], left_vtx[1], color, thickness)
     cv2.line(img, right_vtx[0], right_vtx[1], color, thickness)
@@ -164,7 +164,7 @@ def process_an_image(image):
     gray = grayscale(image)
     blur_gray = gaussian_blur(gray, 9)
     edges = canny(blur_gray, 30, 200)
-    roi_vtx = np.array([[(0, image.shape[0]), (460, 320), (500, 320), (image.shape[1], image.shape[0])]])#此处数值都是关于算法的区域，与显示无关
+    roi_vtx = np.array([[(0, image.shape[0]), (460, 300), (500, 300), (image.shape[1], image.shape[0])]])#此处数值都是关于算法的区域，与显示无关
     roi_edge = region_of_interest(edges, roi_vtx)
     rho = 0.5
     theta = np.pi / 180
@@ -175,21 +175,21 @@ def process_an_image(image):
     res_img = weighted_img(line_image,image)
     return res_img
 
-"""""
+
 output = 'solidWhiteRighttest.mp4'
 clip = VideoFileClip('CarND-LaneLines-P1-master/test_videos/solidWhiteRight.mp4')
 out_clip = clip.fl_image(process_an_image)
 out_clip.write_videofile(output, audio=False)
-"""
+
 """""
 output = 'solidYellowLefttest.mp4'
 clip = VideoFileClip('CarND-LaneLines-P1-master/test_videos/solidYellowLeft.mp4')
 out_clip = clip.fl_image(process_an_image)
 out_clip.write_videofile(output, audio=False)
 """
-
+"""""
 output = 'challengetest.mp4'
 clip = VideoFileClip('CarND-LaneLines-P1-master/test_videos/challenge.mp4')
 out_clip = clip.fl_image(process_an_image)
 out_clip.write_videofile(output, audio=False)
-
+"""
